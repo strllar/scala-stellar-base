@@ -1,0 +1,3 @@
+[submodule "deps/tweetnacl-java"]
+	path = deps/tweetnacl-java
+	url = https://github.com/InstantWebP2P/tweetnacl-java.git
