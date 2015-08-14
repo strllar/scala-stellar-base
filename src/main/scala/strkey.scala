@@ -33,7 +33,7 @@ object StrKey {
     val seed = 0x90 toByte
   }
 
-  val crctab = (0 until 255).map { idx =>
+  val crctab = (0 until 256).map { idx =>
     ((0 until 8) fold (idx << 8)) { (crc, _) =>
       val newcrc = crc << 1
       if ((newcrc & 0x10000) != 0)
