@@ -1,3 +1,6 @@
 [submodule "jvm/deps/tweetnacl-java"]
 	path = jvm/deps/tweetnacl-java
 	url = https://github.com/InstantWebP2P/tweetnacl-java.git
+[submodule "shared/deps/scala-xdr"]
+	path = shared/deps/scala-xdr
+	url = https://github.com/strllar/scala-xdr.git

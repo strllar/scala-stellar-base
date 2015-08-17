@@ -10,13 +10,23 @@ lazy val root = project.in(file(".")).
     publishLocal := {}
   )
 
+////temp scaffold for scalaxdr developing
+lazy val scalaxdr = crossProject.crossType(CrossType.Pure).in(file("shared/deps/scala-xdr")).
+  settings(
+    libraryDependencies +=  "org.scala-lang" % "scala-reflect" % "2.10.5"
+  )
+lazy val scalaxdrjs = scalaxdr.js
+lazy val scalaxdrjvm = scalaxdr.jvm
+////temp end
+
 lazy val stellarbase = crossProject.in(file(".")).
+  dependsOn(scalaxdr % "compile").
   settings(
     name := "scala-stellar-base",
     organization := "org.strllar",
     version := "0.1-SNAPSHOT",
     scalaVersion := "2.10.5",
-    
+
     resolvers += "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/maven-snapshots/",
     resolvers += Resolver.url("Typesafe Ivy Snapshots Repository", url("http://repo.typesafe.com/typesafe/ivy-snapshots"))(Resolver.ivyStylePatterns),
     libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.12",
