@@ -13,7 +13,10 @@ lazy val root = project.in(file(".")).
 ////temp scaffold for scalaxdr developing
 lazy val scalaxdr = crossProject.crossType(CrossType.Pure).in(file("shared/deps/scala-xdr")).
   settings(
-    libraryDependencies +=  "org.scala-lang" % "scala-reflect" % "2.10.5"
+    libraryDependencies ++=  Seq("org.scala-lang" % "scala-reflect" % "2.10.5",
+      "org.scalamacros" %% "quasiquotes" % "2.1.0-M5",
+      compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0-M5" cross CrossVersion.full)
+    )
   )
 lazy val scalaxdrjs = scalaxdr.js
 lazy val scalaxdrjvm = scalaxdr.jvm

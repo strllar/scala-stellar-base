@@ -1,6 +1,6 @@
 package org.strllar.stellarbase
 
-package xdr {
+package stellar_xdr {
 
 
 //    struct Transaction
@@ -36,10 +36,22 @@ package xdr {
 
   object Test {
 
-    val trans = xdr_generator.XDRGen[Transaction]
+    //val trans = xdr_generator.XDRGen[Transaction]
 
     def test(): Unit = {
-      trans.decode()
+      //trans.toXDR()
+
+//      class aSampleStruct {
+//        val f1:Int
+//        val f2:Option[Array[Byte]]
+//        val f3 = unionSwitch[EnumType](armType[SwitchEntry1].as "name1",
+//        armtype[SwitchEntry2].as"name2",
+//        armtype[SwitchEntry3].as"name3") {
+//          case 1 => "name1";
+//          case 2 => "name2";
+//          case 3 => "name3";
+//        }
+//      }
     }
   }
 }
