@@ -3,7 +3,7 @@ package org.strllar.stellarbase
 import java.nio.{ByteOrder, ByteBuffer}
 import akka.util.{ByteString, ByteStringBuilder}
 import java.security.SecureRandom
-import com.iwebpp.crypto.TweetNacl
+import com.emstlk.nacl4s
 
 import org.apache.commons.codec.binary.Base32
 
@@ -11,12 +11,12 @@ import scala.util.{Failure, Success, Try}
 
 case class StrSeed(seedfeeds: Array[Byte]) {
   val rawseed = seedfeeds.padTo(32, 0:Byte).take(32).toArray;
-  lazy val kp = TweetNacl.Signature.keyPair_fromSeed(rawseed)
+  lazy val kp = nacl4s.SigningKeyPair(rawseed)
 
   override def toString() = {
     StrKey.encodeCheck(StrKey.versionBytes.seed, rawseed)
   }
-  def address = StrAddress(kp.getPublicKey)
+  def address = StrAddress(kp.publicKey)
 }
 
 object StrSeed {

@@ -30,6 +30,9 @@ lazy val stellarbase = crossProject.in(file(".")).
     version := "0.1-SNAPSHOT",
     scalaVersion := "2.10.5",
 
+    unmanagedSourceDirectories in Compile <+= (baseDirectory)(_.getParentFile / "shared" / "deps" / "nacl4s" / "src" / "main"),
+    excludeFilter in unmanagedSources := HiddenFileFilter || new SimpleFileFilter(_.getParent.endsWith((new File("/com/emstlk/nacl4s/benchmark")).getPath)),
+
     resolvers += "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/maven-snapshots/",
     resolvers += Resolver.url("Typesafe Ivy Snapshots Repository", url("http://repo.typesafe.com/typesafe/ivy-snapshots"))(Resolver.ivyStylePatterns),
     libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.12",
@@ -43,8 +46,6 @@ lazy val stellarbase = crossProject.in(file(".")).
     libraryDependencies += "commons-codec" % "commons-codec" % "1.10",
     libraryDependencies += "org.bouncycastle" % "bcprov-jdk15on" % "1.52",
     libraryDependencies += "com.h2database" % "h2" % "1.4.186",
-    unmanagedSourceDirectories in Compile += baseDirectory.value / "deps" / "tweetnacl-java" / "src",
-    excludeFilter in unmanagedSources := HiddenFileFilter || "TweetNaclFast.java" || new SimpleFileFilter(_.getParent.endsWith((new File("iwebpp/crypto/tests")).getPath)),
     //for Tests
     resolvers += Resolver.url("inthenow-releases", url("http://dl.bintray.com/inthenow/releases"))(Resolver.ivyStylePatterns),
     libraryDependencies += "com.github.inthenow" %% "zcheck" % "0.6.2",
