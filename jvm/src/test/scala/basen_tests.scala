@@ -1,7 +1,7 @@
 package mytests
 
 import com.inthenow.zcheck.{SpecLite}
-import org.strllar.stellarbase.{BaseN}
+import org.strllar.stellarbase.{BaseN, Hex, Lit}
 
 object BaseNSpec extends SpecLite {
 
@@ -23,7 +23,8 @@ object BaseNSpec extends SpecLite {
   "Base32 should" should {
     val b32 = BaseN.base32
     "encode" in {
-      //Lit("a").toBase32 must_== Lit("ME======")
+      Lit("ME======").asBase32 must_== Lit("a")
+      Lit("a").toBase32 must_==  Lit("ME======").asBase32
       b32.encode("a".getBytes) must_== "ME======"
       b32.encode("be".getBytes) must_== "MJSQ===="
       b32.encode("bee".getBytes) must_== "MJSWK==="
@@ -78,14 +79,14 @@ object BaseNSpec extends SpecLite {
       BASE16("fooba") must_== "666F6F6261"
       BASE16("foobar") must_== "666F6F626172"
     }
-//    "be binary safe" in {
-//      check (b32.decode(
-//        b32.encode(Array(0x00, 0xff, 0x88).map(_.toByte))
-//      )  sameElements (Hex("00ff88"):Array[Byte]))
-//
-//      b32.encode(Hex("f61e1f998d69151de8334dbe753ab17ae831c13849a6aecd95d0a4e5dc25")).must_==("6YPB7GMNNEKR32BTJW7HKOVRPLUDDQJYJGTK5TMV2CSOLXBF")
-//
-//      check (b32.decode("6YPB7GMNNEKR32BTJW7HKOVRPLUDDQJYJGTK5TMV2CSOLXBF") sameElements (Hex("f61e1f998d69151de8334dbe753ab17ae831c13849a6aecd95d0a4e5dc25"):Array[Byte]))
-//    }
+    "be binary safe" in {
+      b32.decode(
+        b32.encode(Array(0x00, 0xff, 0x88).map(_.toByte))
+      ).deep  must_==  Hex("00ff88").bytes.deep
+
+      b32.encode(Hex("f61e1f998d69151de8334dbe753ab17ae831c13849a6aecd95d0a4e5dc25").bytes).must_==("6YPB7GMNNEKR32BTJW7HKOVRPLUDDQJYJGTK5TMV2CSOLXBF")
+
+      b32.decode("6YPB7GMNNEKR32BTJW7HKOVRPLUDDQJYJGTK5TMV2CSOLXBF").deep must_== Hex("f61e1f998d69151de8334dbe753ab17ae831c13849a6aecd95d0a4e5dc25").bytes.deep
+    }
   }
 }

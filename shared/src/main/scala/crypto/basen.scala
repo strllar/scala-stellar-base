@@ -5,6 +5,7 @@ package org.strllar.stellarbase
 
 import UnsignedOps.unsignedValue
 import scala.annotation.tailrec
+import java.nio.charset.Charset
 
 object BaseN {
   //// https://tools.ietf.org/rfc/rfc4648.txt
@@ -41,9 +42,13 @@ object BaseN {
   private[this] def packToLong(input :Seq[Byte]) :Long = packToLong(input, 8)
   private[this] def unpackToBytes(input :Long, bytePerChunk :Int) :List[Byte] = unpackToChars(input, 8, bytePerChunk)
 
-  def createCodec[T](spec :T) = {
-    val (name :String, bitsPerChar :Int, chars :String, padding :Option[Char]) = spec
-    new  {
+  trait BaseNCodec {
+    def encode(bytes :Seq[Byte]) :String
+    def decode(chars :String) :Array[Byte]
+  }
+  def createCodec(spec :(String, Int, String, Option[Char])) = {
+    val (name, bitsPerChar, chars, padding) = spec
+    new  BaseNCodec {
       val revchars = chars.zipWithIndex.toMap
 
       val gcd = Math.min(8, Integer.lowestOneBit(bitsPerChar));
@@ -53,7 +58,7 @@ object BaseN {
       val padlen = (0 until bytesPerChunk).map(x => (x.toByte -> (x * 8 / bitsPerChar).toByte)).toMap
       val revpadlen = padlen.map(x => (x._2 -> x._1)).toMap
 
-      def encode(bytes :Seq[Byte]) = {
+      override def encode(bytes :Seq[Byte]) = {
         val bytesPad = ((bytesPerChunk - bytes.length % bytesPerChunk) % bytesPerChunk).toByte
         val charsPad = padlen(bytesPad)
 
@@ -62,7 +67,7 @@ object BaseN {
         }).toSeq
         (padded.dropRight(charsPad).map(b => chars(b)) ++ Seq.fill(charsPad)(padding.get)).mkString
       }
-      def decode(chars :String) = {
+      override def decode(chars :String) = {
         assert(chars.length % charsPerChunk == 0)
         val padded = chars.map(b => revchars.applyOrElse(b, (_:Char) => 0).toByte).grouped(charsPerChunk).flatMap(x => {
           unpackToBytes(packToLong(x, bitsPerChar), bytesPerChunk)
@@ -79,32 +84,38 @@ object BaseN {
   val base64 = createCodec(base64Spec)
   val base64url = createCodec(base64urlSpec)
 
-  class BaseNString(val ms :Array[Byte], val nbit :Int) {
+  class BaseNString(val bytes :Array[Byte], val codec :BaseNCodec) {
+    def this(bs :Array[Byte]) = this(bs, new BaseNCodec {
+      //base256
+      override def encode(bs: Seq[Byte]): String = new String(bs.toArray, Charset.defaultCharset())
+      override def decode(chars: String): Array[Byte] = chars.getBytes(Charset.defaultCharset())
+    })
+    override def toString() = codec.encode(bytes)
     override def equals(other :Any): Boolean = {
-        false
-      }
+      other.isInstanceOf[BaseNString] && other.asInstanceOf[BaseNString].bytes.sameElements(bytes)
+    }
   }
 
 }
 
-//object Hex {
-//  import BaseN.BaseNString
-//
-//  //def normalize(sep:Option[Char] = ' ', cap:Boolean = false) = ""
-//
-//  def apply(s:String) = new BaseNString(ApacheHex.decodeHex(s.toCharArray), 4)
-//  def apply(ch :Int*) = new BaseNString(ch.map(_.toByte).toArray, 4)
-//  def apply(bs :Array[Byte]) = new BaseNString(bs, 4)
-//}
-//
-//object Lit {
-//  import BaseN.BaseNString
-//  lazy val base32eng = new Base32
-//
-//  def apply(s:String) = new BaseNString(s.getBytes, 8) {
-//    def toBase32Raw = base32eng.encodeToString(ms)
-//    def toBase32 = new BaseNString(ms, 5)
-//
-//    def asBase32 = Hex(base32eng.decode(ms))
-//  }
-//}
+object Hex {
+  import BaseN.BaseNString
+
+  //def normalize(sep:Option[Char] = ' ', cap:Boolean = false) = ""
+
+  def apply(s:String) = new BaseNString(BaseN.base16.decode(s.toUpperCase.filter(c => (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F'))), BaseN.base16)
+  def apply(ch :Int*) = new BaseNString(ch.map(_.toByte).toArray, BaseN.base16)
+  def apply(bs :Array[Byte]) = new BaseNString(bs, BaseN.base16)
+}
+
+object Lit {
+  import BaseN.BaseNString
+  lazy val base32eng = BaseN.base32
+
+  def apply(s:String) = new BaseNString(s.getBytes) {
+    def toBase32Raw = base32eng.encode(bytes)
+    def toBase32 = new BaseNString(bytes, BaseN.base32)
+
+    def asBase32 = Hex(base32eng.decode(codec.encode(bytes)))
+  }
+}
