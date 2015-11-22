@@ -52,7 +52,6 @@ object BaseN {
 
       val padlen = (0 until bytesPerChunk).map(x => (x.toByte -> (x * 8 / bitsPerChar).toByte)).toMap
       val revpadlen = padlen.map(x => (x._2 -> x._1)).toMap
-      val padmatcher = padding.map(p => {s"$p{1,${charsPerChunk-1}}$$".r})
 
       def encode(bytes :Seq[Byte]) = {
         val bytesPad = ((bytesPerChunk - bytes.length % bytesPerChunk) % bytesPerChunk).toByte
@@ -68,8 +67,7 @@ object BaseN {
         val padded = chars.map(b => revchars.applyOrElse(b, (_:Char) => 0).toByte).grouped(charsPerChunk).flatMap(x => {
           unpackToBytes(packToLong(x, bitsPerChar), bytesPerChunk)
         }).toSeq
-
-        val charsPad = padmatcher.flatMap(_.findFirstIn(chars.takeRight(charsPerChunk)).map(_.length)).getOrElse(0).toByte
+        val charsPad = chars.takeRight(charsPerChunk-1).reverse.span(Some(_) == padding)._1.length.toByte
         padded.dropRight(revpadlen(charsPad)).toArray
       }
     }
