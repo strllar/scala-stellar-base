@@ -60,7 +60,7 @@ object BaseN {
         val padded = bytes.padTo(bytes.length + bytesPad, 0:Byte).grouped(bytesPerChunk).flatMap(x => {
           unpackToChars(packToLong(x), bitsPerChar, charsPerChunk)
         }).toSeq
-        padded.dropRight(charsPad).map(b => chars(b)).padTo(padded.length, padding.get).mkString
+        (padded.dropRight(charsPad).map(b => chars(b)) ++ Seq.fill(charsPad)(padding.get)).mkString
       }
       def decode(chars :String) = {
         assert(chars.length % charsPerChunk == 0)

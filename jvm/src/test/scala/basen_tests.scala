@@ -43,6 +43,41 @@ object BaseNSpec extends SpecLite {
       check(b32.decode("MJSWK4TTEAYQ====") sameElements "beers 1")
       check(b32.decode("ONUG6Y3LNFXGO3DZEBSGS43NNFZXGZLE") sameElements "shockingly dismissed")
     }
+
+    def BASE64(s:String) = BaseN.base64.encode(s.getBytes)
+    def BASE32(s:String) = BaseN.base32.encode(s.getBytes)
+    def BASE32HEX(s:String) = BaseN.base32hex.encode(s.getBytes)
+    def BASE16(s:String) = BaseN.base16.encode(s.getBytes)
+    "pass Test Vectors in RFC 4648" in {
+      BASE64("") must_== ""
+      BASE64("f") must_== "Zg=="
+      BASE64("fo") must_== "Zm8="
+      BASE64("foo") must_== "Zm9v"
+      BASE64("foob") must_== "Zm9vYg=="
+      BASE64("fooba") must_== "Zm9vYmE="
+      BASE64("foobar") must_== "Zm9vYmFy"
+      BASE32("") must_== ""
+      BASE32("f") must_== "MY======"
+      BASE32("fo") must_== "MZXQ===="
+      BASE32("foo") must_== "MZXW6==="
+      BASE32("foob") must_== "MZXW6YQ="
+      BASE32("fooba") must_== "MZXW6YTB"
+      BASE32("foobar") must_== "MZXW6YTBOI======"
+      BASE32HEX("") must_== ""
+      BASE32HEX("f") must_== "CO======"
+      BASE32HEX("fo") must_== "CPNG===="
+      BASE32HEX("foo") must_== "CPNMU==="
+      BASE32HEX("foob") must_== "CPNMUOG="
+      BASE32HEX("fooba") must_== "CPNMUOJ1"
+      BASE32HEX("foobar") must_== "CPNMUOJ1E8======"
+      BASE16("") must_== ""
+      BASE16("f") must_== "66"
+      BASE16("fo") must_== "666F"
+      BASE16("foo") must_== "666F6F"
+      BASE16("foob") must_== "666F6F62"
+      BASE16("fooba") must_== "666F6F6261"
+      BASE16("foobar") must_== "666F6F626172"
+    }
 //    "be binary safe" in {
 //      check (b32.decode(
 //        b32.encode(Array(0x00, 0xff, 0x88).map(_.toByte))
