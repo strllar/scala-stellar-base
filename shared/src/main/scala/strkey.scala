@@ -1,13 +1,12 @@
 package org.strllar.stellarbase
 
-import java.nio.{ByteOrder, ByteBuffer}
-import akka.util.{ByteString, ByteStringBuilder}
+import java.nio.ByteOrder
+import java.nio.ByteBuffer
 import java.security.SecureRandom
+
 import com.emstlk.nacl4s
 
-import org.apache.commons.codec.binary.Base32
-
-import scala.util.{Failure, Success, Try}
+import scala.util.{Try, Failure, Success}
 
 case class StrSeed(seedfeeds: Array[Byte]) {
   val rawseed = seedfeeds.padTo(32, 0:Byte).take(32).toArray;
@@ -64,31 +63,37 @@ object StrKey {
 
   def encodeCheck(version:Byte, data:Seq[Byte]) = {
     assume(data.size == 32)
-    val buff  = new ByteStringBuilder
+    val buff  = ByteBuffer.allocate(1+32+2)
     val payload = (version +: data)
     val checksum = CRC16XMODEM(payload)
-    buff ++= payload
-    buff.putShort(checksum)(ByteOrder.LITTLE_ENDIAN)
 
-    val base32eng = new Base32
-    base32eng.encodeToString(buff.result().toArray)
+    buff.order(ByteOrder.LITTLE_ENDIAN)
+    buff.put(payload.toArray)
+    buff.putShort(checksum)
+
+    buff.flip()
+    val arr = new Array[Byte](buff.remaining())
+    buff.get(arr)
+    val base32eng = BaseN.base32
+    base32eng.encode(arr)
   }
 
   def decodeCheck(version :Byte, s :String) = {
-    val base32eng = new Base32
-    val arr = base32eng.decode(s)
-    if (arr.length == (1+32+2)) {
-      val crc = CRC16XMODEM(arr.slice(0, 33))
-      val unsigned_crc = crc & 0xffff
-      if (arr(0) == version) {
-        if ((unsigned_crc & 0xff).toByte == arr(33) && (unsigned_crc >> 8).toByte == arr(34)) {
-          Success(arr.slice(1, 33))
+    val base32eng = BaseN.base32
+    Try(base32eng.decode(s)) match {
+      case Success(arr) if (arr.length == (1 + 32 + 2)) => {
+        val crc = CRC16XMODEM(arr.slice(0, 33))
+        val unsigned_crc = crc & 0xffff
+        if (arr(0) == version) {
+          if ((unsigned_crc & 0xff).toByte == arr(33) && (unsigned_crc >> 8).toByte == arr(34)) {
+            Success(arr.slice(1, 33))
+          }
+          else Failure(new Exception("wrong crc"))
         }
-        else Failure(new Exception("wrong crc"))
+        else Failure(new Exception("wrong version"))
       }
-      else Failure(new Exception("wrong version"))
+      case _ => Failure(new Exception("wrong format"))
     }
-    else Failure(new Exception("wrong format"))
   }
 
   def master(): StrSeed  = {
