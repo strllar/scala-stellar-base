@@ -9,15 +9,15 @@ object JacksumSpec extends SpecLite {
       val DIGEST0 =
         "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD"
       val mdo = new jonelo.jacksum.adapt.gnu.crypto.hash.Sha256;
-      mdo.update(0x61); // a
-      mdo.update(0x62); // b
-      mdo.update(0x63);
+      mdo.update(0x61 toByte); // a
+      mdo.update(0x62 toByte); // b
+      mdo.update(0x63 toByte);
       Hex(mdo.digest).toString() must_== DIGEST0
 
       val md = new Sha256;
-      md.update(0x61); // a
-      md.update(0x62); // b
-      md.update(0x63);
+      md.update(0x61 toByte); // a
+      md.update(0x62 toByte); // b
+      md.update(0x63 toByte);
       Hex(md.digest).toString() must_== DIGEST0
     }
   }
@@ -28,6 +28,10 @@ object JacksumSpec extends SpecLite {
       Hex(mdo.digest).toString() must_== DIGEST0
       val md = new RipeMD160
       Hex(md.digest).toString() must_== DIGEST0
+
+      md.reset()
+      md.update("Rosetta Code".getBytes)
+      Hex(md.digest).toString() must_== "b3be159860842cebaa7174c8fff0aa9e50a5199f".toUpperCase
     }
   }
 }

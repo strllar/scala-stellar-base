@@ -103,7 +103,7 @@ trait IMessageDigest {
     * <p>Resets the current context of this instance clearing any eventually cached
     * intermediary values.</p>
     */
-  def reset
+  def reset()
 }
 
 // ----------------------------------------------------------------------------
@@ -168,6 +168,8 @@ abstract class BaseHash(val name: String, val hashSize: Int, val blockSize: Int)
     }
   }
 
+  def update(b: Array[Byte]) :Unit = update(b, 0, b.length)
+
   override def update(b: Array[Byte], offset: Int, len: Int) {
     var n: Int = (count % blockSize).toInt
     count += len
@@ -200,7 +202,7 @@ abstract class BaseHash(val name: String, val hashSize: Int, val blockSize: Int)
     return result
   }
 
-  override def reset {
+  override def reset() {
     count = 0L;
     {
       var i: Int = 0
