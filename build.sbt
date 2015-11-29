@@ -55,6 +55,13 @@ lazy val stellarbase = crossProject.in(file(".")).
   ).
   jsSettings(
     // Add JS-specific settings here
+    //scalaJSStage in Global := FullOptStage,
+    //postLinkJSEnv := PhantomJSEnv().value,
+    resolvers += Resolver.url("inthenow-releases", url("http://dl.bintray.com/inthenow/releases"))(Resolver.ivyStylePatterns),
+    libraryDependencies += "com.github.inthenow" %%% "zcheck" % "0.6.2",
+    //libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.12.1" % "test"
+    testFrameworks += new TestFramework("org.scalacheck.ScalaCheckFramework")
+    //ScalaJSKeys.scalaJSTestFramework := "org.scalacheck.ScalaCheckFramework"
   )
 
 lazy val targetJVM = stellarbase.jvm
