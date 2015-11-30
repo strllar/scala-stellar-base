@@ -8,51 +8,55 @@ import com.emstlk.nacl4s
 
 import scala.util.{Try, Failure, Success}
 
-class StrSeed {
+class StrSeed(implicit versionBytes :StrKey.VersionBytes) {
   val rawseed = new Array[Byte](32)
-  def this(seedfeeds: Seq[Byte]) {
+  def this(seedfeeds: Seq[Byte])(implicit vers: StrKey.VersionBytes) {
     this()
     seedfeeds.copyToArray(rawseed)
   }
   lazy val kp = nacl4s.SigningKeyPair(rawseed)
 
   override def toString() = {
-    StrKey.encodeCheck(StrKey.versionBytes.seed, rawseed)
+    StrKey.encodeCheck(versionBytes.seed, rawseed)
   }
   def address = new StrAddress(kp.publicKey)
 }
 
 object StrSeed {
-  def parse(s :String) = {
-    StrKey.decodeCheck(StrKey.versionBytes.seed, s).map(new StrSeed(_))
+  def parse(s :String)(implicit versionBytes :StrKey.VersionBytes) = {
+    StrKey.decodeCheck(versionBytes.seed, s).map(new StrSeed(_))
   }
 }
 
-class  StrAddress {
+class  StrAddress(implicit versionBytes :StrKey.VersionBytes) {
   val rawbytes = new Array[Byte](32)
-  def this(bytes:  Seq[Byte]) {
+  def this(bytes:  Seq[Byte])(implicit vers: StrKey.VersionBytes) {
     this()
     bytes.copyToArray(rawbytes)
   }
   override def toString() = {
-    StrKey.encodeCheck(StrKey.versionBytes.accountId, rawbytes)
+    StrKey.encodeCheck(versionBytes.accountId, rawbytes)
   }
 }
 
 object StrAddress {
-  def parse(s :String) = {
-    StrKey.decodeCheck(StrKey.versionBytes.accountId, s).map(new StrAddress(_))
+  def parse(s :String)(implicit versionBytes :StrKey.VersionBytes) = {
+    StrKey.decodeCheck(versionBytes.accountId, s).map(new StrAddress(_))
   }
 }
 
 object StrKey {
   //"GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
   //"SBQWY3DNPFWGSZTFNV4WQZLBOJ2GQYLTMJSWK3TTMVQXEY3INFXGO52X"
+//  new VersionBytes{
+//    val accountId :Byte = 0x30
+//    val seed :Byte = 0x90 toByte
+//  }
   val masterChant = "allmylifemyhearthasbeensearching"
 
-  val versionBytes = new {
-    val accountId :Byte = 0x30
-    val seed :Byte = 0x90 toByte
+  trait VersionBytes {
+    val accountId :Byte
+    val seed :Byte
   }
 
   val crctab = (0 until 256).map { idx =>
@@ -105,12 +109,12 @@ object StrKey {
     }
   }
 
-  def master(): StrSeed  = {
-    new StrSeed(masterChant.getBytes)
+  def master()(implicit network :Network): StrSeed  = {
+    new StrSeed(masterChant.getBytes)(network.versionBytes)
   }
 
-  def random(): StrSeed  = {
-    new StrSeed((new SecureRandom()).generateSeed(32))
+  def random()(implicit network :Network): StrSeed  = {
+    new StrSeed((new SecureRandom()).generateSeed(32))(network.versionBytes)
   }
 
 }

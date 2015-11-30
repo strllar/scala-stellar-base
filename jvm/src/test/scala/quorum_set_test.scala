@@ -3,6 +3,8 @@ import org.strllar.stellarbase.{StrSeed, StrAddress, QuorumSet}
 
 
 object QuorumSetSpec extends SpecLite {
+  import org.strllar.stellarbase.Networks.XLM.versionBytes
+
   " Simple Validator QuorumSet" should {
     "generate config string" in {
       val generated = QuorumSet.toConfigString(QuorumSet(Seq(StrSeed.parse("SDQVDISRYN2JXBS7ICL7QJAEKB3HWBJFP2QECXG7GZICAHBK4UNJCWK2").get.address), Seq.empty, 88))

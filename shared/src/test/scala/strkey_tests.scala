@@ -4,6 +4,7 @@ import com.inthenow.zcheck.SpecLite
 import org.strllar.stellarbase.{StrAddress, StrSeed}
 
 object TestKeys {
+  import org.strllar.stellarbase.Networks.XLM.versionBytes
   val master = new StrSeed("allmylifemyhearthasbeensearching".getBytes)
   val adam = new StrSeed("tian wang gai di hu?????????????".getBytes)
   val eve = new StrSeed("bao ta zhen he yao!!!!!!!!!!!!!!".getBytes)
@@ -15,6 +16,8 @@ object TestKeys {
 
 object StrSeedSpec extends SpecLite {
   import TestKeys._
+  import org.strllar.stellarbase.Networks.XLM.versionBytes
+
   "StrSeed should" should {
     "generate correct string" in {
       master.toString() must_== "SBQWY3DNPFWGSZTFNV4WQZLBOJ2GQYLTMJSWK3TTMVQXEY3INFXGO52X"
@@ -54,6 +57,8 @@ object StrSeedSpec extends SpecLite {
 }
 
 object StrAddressSpec extends SpecLite {
+  import org.strllar.stellarbase.Networks.XLM.versionBytes
+
   val test_address = new StrAddress(1 to 32 map(_.toByte))
   "genderate correct address" in {
     test_address.toString()  must_== "GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"
