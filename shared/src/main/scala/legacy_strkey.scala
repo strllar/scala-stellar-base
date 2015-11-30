@@ -40,20 +40,19 @@ object StrKey {
   }
 
   private[this] def SHA256(payload :IndexedSeq[Byte]) :Vector[Byte] = {
-    val buff = payload.toArray
     val md256 = new Sha256()
-    md256.update(buff)
+    md256.update(payload)
     Vector(md256.digest:_*)
   }
   private[this] def SHA256Hash(payload :IndexedSeq[Byte]) :Vector[Byte] = {
     //SHA256Hash: double sha256
-    val hash256 = SHA256(payload).toArray
+    val hash256 = SHA256(payload)
     val md256 = new Sha256()
     md256.update(hash256)
     Vector(md256.digest:_*)
   }
   private[this] def Hash160(payload :IndexedSeq[Byte]) :Vector[Byte] = {
-    val hash256 = SHA256(payload).toArray
+    val hash256 = SHA256(payload)
     val md160 = new RipeMD160
     md160.update(hash256)
     Vector(md160.digest:_*)
@@ -83,11 +82,11 @@ object StrKey {
     })
   }
 
-  def seed(bytes :Array[Byte]) = {
+  def seed(bytes :IndexedSeq[Byte]) = {
     encodeCheck(bytes, VersionEncoding.VER_SEED)
   }
 
-  def address(pubkey :Array[Byte]) = {
+  def address(pubkey :IndexedSeq[Byte]) = {
     val accountid = Hash160(pubkey)
     encodeCheck(accountid, VersionEncoding.VER_ACCOUNT_ID)
   }
@@ -99,10 +98,10 @@ object StrKey {
       new {
         def asLegacySeed = new {
           private[this] val tmpseed = decodeCheck(rawstr, VersionEncoding.VER_SEED).get
-          def upgrade = new StrSeed(tmpseed toArray) {
-            def legacy = seed(rawseed toArray)
+          def upgrade = new StrSeed(tmpseed) {
+            def legacy = seed(rawseed)
           }
-          override def toString = seed(tmpseed toArray)
+          override def toString = seed(tmpseed)
         }
 
         def asLegacyAddress = new {
@@ -116,7 +115,7 @@ object StrKey {
     }
 
     implicit def legacybridge(gkey :StrAddress) = new {
-      def legacy = address(gkey.byteBuffer)
+      def legacy = address(gkey.rawbytes)
     }
     implicit def legacybridge(skey :StrSeed) = new {
       def legacy =seed(skey.rawseed)

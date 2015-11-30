@@ -8,31 +8,40 @@ import com.emstlk.nacl4s
 
 import scala.util.{Try, Failure, Success}
 
-case class StrSeed(seedfeeds: Array[Byte]) {
-  val rawseed = seedfeeds.padTo(32, 0:Byte).take(32).toArray;
+class StrSeed {
+  val rawseed = new Array[Byte](32)
+  def this(seedfeeds: Seq[Byte]) {
+    this()
+    seedfeeds.copyToArray(rawseed)
+  }
   lazy val kp = nacl4s.SigningKeyPair(rawseed)
 
   override def toString() = {
     StrKey.encodeCheck(StrKey.versionBytes.seed, rawseed)
   }
-  def address = StrAddress(kp.publicKey)
+  def address = new StrAddress(kp.publicKey)
 }
 
 object StrSeed {
   def parse(s :String) = {
-    StrKey.decodeCheck(StrKey.versionBytes.seed, s).map(StrSeed.apply)
+    StrKey.decodeCheck(StrKey.versionBytes.seed, s).map(new StrSeed(_))
   }
 }
 
-case class  StrAddress(byteBuffer:  Array[Byte]) {
+class  StrAddress {
+  val rawbytes = new Array[Byte](32)
+  def this(bytes:  Seq[Byte]) {
+    this()
+    bytes.copyToArray(rawbytes)
+  }
   override def toString() = {
-    StrKey.encodeCheck(StrKey.versionBytes.accountId, byteBuffer)
+    StrKey.encodeCheck(StrKey.versionBytes.accountId, rawbytes)
   }
 }
 
 object StrAddress {
   def parse(s :String) = {
-    StrKey.decodeCheck(StrKey.versionBytes.accountId, s).map(StrAddress.apply)
+    StrKey.decodeCheck(StrKey.versionBytes.accountId, s).map(new StrAddress(_))
   }
 }
 
@@ -42,8 +51,8 @@ object StrKey {
   val masterChant = "allmylifemyhearthasbeensearching"
 
   val versionBytes = new {
-    val accountId = 0x30 toByte
-    val seed = 0x90 toByte
+    val accountId :Byte = 0x30
+    val seed :Byte = 0x90 toByte
   }
 
   val crctab = (0 until 256).map { idx =>
@@ -97,11 +106,11 @@ object StrKey {
   }
 
   def master(): StrSeed  = {
-    StrSeed(masterChant.getBytes)
+    new StrSeed(masterChant.getBytes)
   }
 
   def random(): StrSeed  = {
-    StrSeed((new SecureRandom()).generateSeed(32))
+    new StrSeed((new SecureRandom()).generateSeed(32))
   }
 
 }

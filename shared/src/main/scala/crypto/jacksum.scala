@@ -86,10 +86,8 @@ trait IMessageDigest {
     * operation.</p>
     *
     * @param in the input block.
-    * @param offset start of meaningful bytes in input block.
-    * @param length number of bytes, in input block, to consider.
     */
-  def update(in: Array[Byte], offset: Int, length: Int)
+  def update(in: IndexedSeq[Byte])
 
   /**
     * <p>Completes the message digest by performing final operations such as
@@ -168,21 +166,20 @@ abstract class BaseHash(val name: String, val hashSize: Int, val blockSize: Int)
     }
   }
 
-  def update(b: Array[Byte]) :Unit = update(b, 0, b.length)
-
-  override def update(b: Array[Byte], offset: Int, len: Int) {
+  override def update(b: IndexedSeq[Byte]) {
+    val len = b.length
     var n: Int = (count % blockSize).toInt
     count += len
     val partLen: Int = blockSize - n
     var i: Int = 0
     if (len >= partLen) {
-      System.arraycopy(b, offset, buffer, n, partLen)
+      b.copyToArray(buffer, n, partLen)
       transform(buffer, 0);
       {
         i = partLen
         while (i + blockSize - 1 < len) {
           {
-            transform(b, offset + i)
+            transform(b, i)
           }
           i += blockSize
         }
@@ -190,13 +187,13 @@ abstract class BaseHash(val name: String, val hashSize: Int, val blockSize: Int)
       n = 0
     }
     if (i < len) {
-      System.arraycopy(b, offset + i, buffer, n, len - i)
+      b.drop(i).copyToArray(buffer, n, len - i)
     }
   }
 
   override def digest: Array[Byte] = {
     val tail: Array[Byte] = padBuffer
-    update(tail, 0, tail.length)
+    update(tail)
     val result: Array[Byte] = getResult
     reset
     return result
@@ -241,7 +238,7 @@ abstract class BaseHash(val name: String, val hashSize: Int, val blockSize: Int)
     * @param offset the index where the data to digest is located within the
     *               input buffer.
     */
-  protected def transform(in: Array[Byte], offset: Int)
+  protected def transform(in: IndexedSeq[Byte], offset: Int)
 }
 
 // ----------------------------------------------------------------------------
@@ -310,7 +307,7 @@ object Sha256 {
     return sha(hh0, hh1, hh2, hh3, hh4, hh5, hh6, hh7, in, offset)
   }
 
-  private def sha(hh0: Int, hh1: Int, hh2: Int, hh3: Int, hh4: Int, hh5: Int, hh6: Int, hh7: Int, in: Array[Byte], offset: Int): Array[Int] = {
+  private def sha(hh0: Int, hh1: Int, hh2: Int, hh3: Int, hh4: Int, hh5: Int, hh6: Int, hh7: Int, in: IndexedSeq[Byte], offset: Int): Array[Int] = {
     var A: Int = hh0
     var B: Int = hh1
     var C: Int = hh2
@@ -395,7 +392,7 @@ class Sha256( private var h0: Int,
     this(0, 0, 0, 0, 0, 0, 0, 0);
   }
 
-  protected def transform(in: Array[Byte], offset: Int) {
+  override protected def transform(in: IndexedSeq[Byte], offset: Int) {
     val result: Array[Int] = Sha256.sha(h0, h1, h2, h3, h4, h5, h6, h7, in, offset)
     h0 = result(0)
     h1 = result(1)
@@ -536,7 +533,7 @@ class RipeMD160(private var h0: Int,
     this(0, 0, 0, 0, 0)
   }
 
-  protected def transform(in: Array[Byte], offset: Int) {
+  override protected def transform(in: IndexedSeq[Byte], offset: Int) {
     var A: Int = 0
     var B: Int = 0
     var C: Int = 0
