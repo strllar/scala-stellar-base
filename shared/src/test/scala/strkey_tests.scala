@@ -1,10 +1,7 @@
 package mytests
 
-import com.inthenow.zcheck.{SpecLite}
-
-import org.strllar.stellarbase.{StrSeed, StrAddress}
-
-import scala.util.Try
+import com.inthenow.zcheck.SpecLite
+import org.strllar.stellarbase.{StrAddress, StrSeed}
 
 object TestKeys {
   val master = StrSeed("allmylifemyhearthasbeensearching".getBytes)

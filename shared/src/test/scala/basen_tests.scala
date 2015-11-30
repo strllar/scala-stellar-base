@@ -1,6 +1,6 @@
 package mytests
 
-import com.inthenow.zcheck.{SpecLite}
+import com.inthenow.zcheck.SpecLite
 import org.strllar.stellarbase.{BaseN, Hex, Lit}
 
 object BaseNSpec extends SpecLite {
