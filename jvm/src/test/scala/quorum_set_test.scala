@@ -3,7 +3,7 @@ import org.strllar.stellarbase.{StrSeed, StrAddress, QuorumSet}
 
 
 object QuorumSetSpec extends SpecLite {
-  import org.strllar.stellarbase.Networks.XLM.versionBytes
+  import org.strllar.stellarbase.Networks.XLMLive
 
   " Simple Validator QuorumSet" should {
     "generate config string" in {

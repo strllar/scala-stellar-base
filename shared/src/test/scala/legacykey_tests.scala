@@ -6,7 +6,7 @@ import org.strllar.stellarbase.StrAddress
 import org.strllar.stellarbase.legacy.StrKey.Converters._
 
 object LegacyStrKeySpec extends SpecLite {
-  import org.strllar.stellarbase.Networks.XLM.versionBytes
+  import org.strllar.stellarbase.Networks.XLMLive
 
   "legacy keys" should {
     "be identity with decode+encode" in {

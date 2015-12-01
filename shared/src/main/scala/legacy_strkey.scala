@@ -94,7 +94,7 @@ object StrKey {
   object Converters {
     import org.strllar.stellarbase.{StrSeed, StrAddress}
 
-    implicit def str2keys(rawstr :String)(implicit vers :org.strllar.stellarbase.StrKey.VersionBytes) = {
+    implicit def str2keys(rawstr :String)(implicit network :Network) = {
       new {
         def asLegacySeed = new {
           private[this] val tmpseed = decodeCheck(rawstr, VersionEncoding.VER_SEED).get

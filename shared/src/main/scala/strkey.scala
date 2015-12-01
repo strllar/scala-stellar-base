@@ -8,41 +8,34 @@ import com.emstlk.nacl4s
 
 import scala.util.{Try, Failure, Success}
 
-class StrSeed(implicit versionBytes :StrKey.VersionBytes) {
+class StrSeed(implicit network :Network) {
   val rawseed = new Array[Byte](32)
-  def this(seedfeeds: Seq[Byte])(implicit vers: StrKey.VersionBytes) {
+  def this(seedfeeds: Seq[Byte])(implicit network :Network) {
     this()
     seedfeeds.copyToArray(rawseed)
   }
   lazy val kp = nacl4s.SigningKeyPair(rawseed)
 
-  override def toString() = {
-    StrKey.encodeCheck(versionBytes.seed, rawseed)
-  }
+  override def toString() = network.keyFactory.formatSeed(this)
+
   def address = new StrAddress(kp.publicKey)
 }
 
 object StrSeed {
-  def parse(s :String)(implicit versionBytes :StrKey.VersionBytes) = {
-    StrKey.decodeCheck(versionBytes.seed, s).map(new StrSeed(_))
-  }
+  def parse(s :String)(implicit network :Network) = network.keyFactory.parseSeed(s)
 }
 
-class  StrAddress(implicit versionBytes :StrKey.VersionBytes) {
+class  StrAddress(implicit network :Network) {
   val rawbytes = new Array[Byte](32)
-  def this(bytes:  Seq[Byte])(implicit vers: StrKey.VersionBytes) {
+  def this(bytes:  Seq[Byte])(implicit network :Network) {
     this()
     bytes.copyToArray(rawbytes)
   }
-  override def toString() = {
-    StrKey.encodeCheck(versionBytes.accountId, rawbytes)
-  }
+  override def toString() = network.keyFactory.formatAddress(this)
 }
 
 object StrAddress {
-  def parse(s :String)(implicit versionBytes :StrKey.VersionBytes) = {
-    StrKey.decodeCheck(versionBytes.accountId, s).map(new StrAddress(_))
-  }
+  def parse(s :String)(implicit network :Network) = network.keyFactory.parseAddress(s)
 }
 
 object StrKey {
@@ -54,10 +47,7 @@ object StrKey {
 //  }
   val masterChant = "allmylifemyhearthasbeensearching"
 
-  trait VersionBytes {
-    val accountId :Byte
-    val seed :Byte
-  }
+
 
   val crctab = (0 until 256).map { idx =>
     ((0 until 8) fold (idx << 8)) { (crc, _) =>
@@ -110,11 +100,11 @@ object StrKey {
   }
 
   def master()(implicit network :Network): StrSeed  = {
-    new StrSeed(masterChant.getBytes)(network.versionBytes)
+    new StrSeed(masterChant.getBytes)(network)
   }
 
   def random()(implicit network :Network): StrSeed  = {
-    new StrSeed((new SecureRandom()).generateSeed(32))(network.versionBytes)
+    new StrSeed((new SecureRandom()).generateSeed(32))(network)
   }
 
 }
