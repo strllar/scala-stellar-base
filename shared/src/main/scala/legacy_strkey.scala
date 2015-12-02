@@ -92,7 +92,7 @@ object StrKey {
   }
 
   object Converters {
-    import org.strllar.stellarbase.{StrSeed, StrAddress}
+    import org.strllar.stellarbase.{StrSeed, StrAccountID}
 
     implicit def str2keys(rawstr :String)(implicit network :Network) = {
       new {
@@ -110,11 +110,11 @@ object StrKey {
         }
 
         def asStrSeed = StrSeed.parse(rawstr).get
-        def asStrAddress = StrAddress.parse(rawstr).get
+        def asStrAccountID = StrAccountID.parse(rawstr).get
       }
     }
 
-    implicit def legacybridge(gkey :StrAddress) = new {
+    implicit def legacybridge(gkey :StrAccountID) = new {
       def legacy = address(gkey.rawbytes)
     }
     implicit def legacybridge(skey :StrSeed) = new {

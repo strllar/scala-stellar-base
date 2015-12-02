@@ -11,8 +11,8 @@ object KeyFactory {
 }
 
 trait KeyFactory {
-  def parseAddress(s :String) :Try[StrAddress]
-  def formatAddress(addr :StrAddress) :String
+  def parseAccountID(s :String) :Try[StrAccountID]
+  def formatAccountID(addr :StrAccountID) :String
   def parseSeed(s :String) :Try[StrSeed]
   def formatSeed(seed :StrSeed) :String
 }
@@ -37,8 +37,8 @@ object Networks {
     override val NETWORK_PASSPHRASE = "Public Global Stellar Network ; September 2015"
     override val name = "Stellar Live"
     override val keyFactory = new KeyFactory{
-      override def parseAddress(s :String) = StrKey.decodeCheck(defaultVersionBytes.accountId, s).map(new StrAddress(_)(XLMLive.this))
-      override def formatAddress(addr :StrAddress) = StrKey.encodeCheck(defaultVersionBytes.accountId, addr.rawbytes)
+      override def parseAccountID(s :String) = StrKey.decodeCheck(defaultVersionBytes.accountId, s).map(new StrAccountID(_)(XLMLive.this))
+      override def formatAccountID(addr :StrAccountID) = StrKey.encodeCheck(defaultVersionBytes.accountId, addr.rawbytes)
       override def parseSeed(s :String) = StrKey.decodeCheck(defaultVersionBytes.seed, s).map(new StrSeed(_)(XLMLive.this))
       override def formatSeed(seed :StrSeed) =  StrKey.encodeCheck(defaultVersionBytes.seed, seed.rawseed)
     }
@@ -50,8 +50,8 @@ object Networks {
     override val NETWORK_PASSPHRASE = "Test SDF Network ; September 2015"
     override val name = "Stellar Testnet"
     override val keyFactory = new KeyFactory{
-      override def parseAddress(s :String) = StrKey.decodeCheck(defaultVersionBytes.accountId, s).map(new StrAddress(_)(XLMTestnet.this))
-      override def formatAddress(addr :StrAddress) = StrKey.encodeCheck(defaultVersionBytes.accountId, addr.rawbytes)
+      override def parseAccountID(s :String) = StrKey.decodeCheck(defaultVersionBytes.accountId, s).map(new StrAccountID(_)(XLMTestnet.this))
+      override def formatAccountID(addr :StrAccountID) = StrKey.encodeCheck(defaultVersionBytes.accountId, addr.rawbytes)
       override def parseSeed(s :String) = StrKey.decodeCheck(defaultVersionBytes.seed, s).map(new StrSeed(_)(XLMTestnet.this))
       override def formatSeed(seed :StrSeed) =  StrKey.encodeCheck(defaultVersionBytes.seed, seed.rawseed)
     }
@@ -68,8 +68,8 @@ object Networks {
     override val NETWORK_PASSPHRASE = "KLM is a Kilo of xLM; Strllar is an awesome copycat Stellar."
     override val name = "KLM Production"
     override val keyFactory = new KeyFactory{
-      override def parseAddress(s :String) = StrKey.decodeCheck(versionBytes.accountId, s).map(new StrAddress(_)(KLMLive.this))
-      override def formatAddress(addr :StrAddress) = StrKey.encodeCheck(versionBytes.accountId, addr.rawbytes)
+      override def parseAccountID(s :String) = StrKey.decodeCheck(versionBytes.accountId, s).map(new StrAccountID(_)(KLMLive.this))
+      override def formatAccountID(addr :StrAccountID) = StrKey.encodeCheck(versionBytes.accountId, addr.rawbytes)
       override def parseSeed(s :String) = StrKey.decodeCheck(versionBytes.seed, s).map(new StrSeed(_)(KLMLive.this))
       override def formatSeed(seed :StrSeed) =  StrKey.encodeCheck(versionBytes.seed, seed.rawseed)
     }

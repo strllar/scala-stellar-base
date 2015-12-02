@@ -2,7 +2,7 @@ package mytests
 
 import com.inthenow.zcheck.{SpecLite}
 
-import org.strllar.stellarbase.StrAddress
+import org.strllar.stellarbase.StrAccountID$
 import org.strllar.stellarbase.legacy.StrKey.Converters._
 
 object LegacyStrKeySpec extends SpecLite {
@@ -15,7 +15,7 @@ object LegacyStrKeySpec extends SpecLite {
     }
 
     def checkIsPairedLegacyKey(skey :String, addr :String): Unit = {
-      skey.asLegacySeed.upgrade.address.legacy must_== addr
+      skey.asLegacySeed.upgrade.accountid.legacy must_== addr
     }
 
     "should be paired" in {
@@ -29,8 +29,8 @@ object LegacyStrKeySpec extends SpecLite {
       val abc = "s3mH7MZ5ud38orpMFjXtUcu3jb3nhdQTPVC6Td4rVbi9biCm1W5".asLegacyAddress.mustThrowA[Exception]
       "gggGpCWrMJwngLjeWqa27BtMTkqmwfMvt".asLegacySeed.mustThrowA[Exception]
 
-      "GAKIEJNSVB44WDEVNDY6RGRVOXWHZWYM7V3UULOZBVISONXM76OYHRGU" .asStrAddress.legacy must_== "gUtknaqjh8LMRedgFLof2E2LZuiEihQDVD"
-      "GB2Y4SUXOWSTXHTL7QVNGGK3Y6IOMUGHDB3ZICWJN2EJ2PJHORWS3LG4".asStrAddress.legacy  must_== "gNvsRBqV5YEarv7RCjuYzmsYoXDJpeHRtD"
+      "GAKIEJNSVB44WDEVNDY6RGRVOXWHZWYM7V3UULOZBVISONXM76OYHRGU" .asStrAccountID.legacy must_== "gUtknaqjh8LMRedgFLof2E2LZuiEihQDVD"
+      "GB2Y4SUXOWSTXHTL7QVNGGK3Y6IOMUGHDB3ZICWJN2EJ2PJHORWS3LG4".asStrAccountID.legacy  must_== "gNvsRBqV5YEarv7RCjuYzmsYoXDJpeHRtD"
     }
   }
 }

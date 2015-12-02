@@ -1,12 +1,12 @@
 package mytests
 
 import com.inthenow.zcheck.SpecLite
-import org.strllar.stellarbase.{StrAddress, StrSeed, StrKey}
+import org.strllar.stellarbase.{StrAccountID, StrSeed, StrKey}
 
 object TestKeys {
   import org.strllar.stellarbase.Networks.XLMLive
 
-  val master = new StrSeed("allmylifemyhearthasbeensearching".getBytes)
+  val master = StrKey.legacyMaster()
   val adam = new StrSeed("tian wang gai di hu?????????????".getBytes)
   val eve = new StrSeed("bao ta zhen he yao!!!!!!!!!!!!!!".getBytes)
 
@@ -20,13 +20,13 @@ object StrSeedSpec extends SpecLite {
   "Root accounts in various networks" should {
     "be correct" in {
       StrKey.master()(org.strllar.stellarbase.Networks.XLMLive).toString() must_== "SB5MGOMXKRHDC5OSM26QEJBZWIWNWFSQRQARMPZG4XFSUPQQIWUXTVO6"
-      StrKey.master()(org.strllar.stellarbase.Networks.XLMLive).address.toString() must_== "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7"
+      StrKey.master()(org.strllar.stellarbase.Networks.XLMLive).accountid.toString() must_== "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7"
 
       StrKey.master()(org.strllar.stellarbase.Networks.XLMTestnet).toString() must_== "SDHOAMBNLGCE2MV5ZKIVZAQD3VCLGP53P3OBSBI6UN5L5XZI5TKHFQL4"
-      StrKey.master()(org.strllar.stellarbase.Networks.XLMTestnet).address.toString() must_== "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
+      StrKey.master()(org.strllar.stellarbase.Networks.XLMTestnet).accountid.toString() must_== "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
 
       StrKey.master()(org.strllar.stellarbase.Networks.KLMLive).toString() must_== "XZISUMAUUY622JJW4S6POVMWDAY7DSP4QAOEQGTJJLICWC3TCM734VWL"
-      StrKey.master()(org.strllar.stellarbase.Networks.KLMLive).address.toString() must_== "NBIFBSRNGRWNFBOL5KRH3RTNDZEHQSMLCDXYQ2INUE4IN7H6NO6UPPAQ"
+      StrKey.master()(org.strllar.stellarbase.Networks.KLMLive).accountid.toString() must_== "NBIFBSRNGRWNFBOL5KRH3RTNDZEHQSMLCDXYQ2INUE4IN7H6NO6UPPAQ"
     }
   }
   "StrSeed should" should {
@@ -42,17 +42,17 @@ object StrSeedSpec extends SpecLite {
       yang.toString() must_== "SD77367Z6727H4PP5XV6TZ7F4PQ57XO33HL5LU6RZ7G4XSOHYXB4DINL"
     }
     "genderate correct address" in {
-      master.address.toString() must_== "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-      adam.address.toString() must_== "GDPE6EL3TCRSB5PERFORHRM4FWHNPAQ4YXDYKMQZ2IISJKR4UYZNX4US"
-      eve.address.toString() must_== "GBCJ6N6TUBLHKHSA5EDOTAWCQYEHBX6T2JX7FKGSQRGONAL7Z6TROSTT"
+      master.accountid.toString() must_== "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
+      adam.accountid.toString() must_== "GDPE6EL3TCRSB5PERFORHRM4FWHNPAQ4YXDYKMQZ2IISJKR4UYZNX4US"
+      eve.accountid.toString() must_== "GBCJ6N6TUBLHKHSA5EDOTAWCQYEHBX6T2JX7FKGSQRGONAL7Z6TROSTT"
 
-      tao.address.toString() must_== "GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q"
-      yin.address.toString() must_== "GC3BWHRPM3SQFRUCM3JY2TTHLETTXKCQNE2BJYFLJXRCEFIMAVQB552G"
-      yang.address.toString() must_== "GDHEFJQIKJ6JTTOOBTQHTXEXGQJHUK45JL5LYSR37O2SZLYLTUWR755D"
+      tao.accountid.toString() must_== "GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q"
+      yin.accountid.toString() must_== "GC3BWHRPM3SQFRUCM3JY2TTHLETTXKCQNE2BJYFLJXRCEFIMAVQB552G"
+      yang.accountid.toString() must_== "GDHEFJQIKJ6JTTOOBTQHTXEXGQJHUK45JL5LYSR37O2SZLYLTUWR755D"
     }
     "parse correct string" in {
       val master2 = StrSeed.parse("SBQWY3DNPFWGSZTFNV4WQZLBOJ2GQYLTMJSWK3TTMVQXEY3INFXGO52X")
-      master2.get.address.toString() must_== "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
+      master2.get.accountid.toString() must_== "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
     }
     "throw when parse wrong string" in {
       val shorten_master = StrSeed.parse("SBQWY3DNPF")
@@ -69,15 +69,15 @@ object StrSeedSpec extends SpecLite {
   }
 }
 
-object StrAddressSpec extends SpecLite {
+object StrAccountIDSpec extends SpecLite {
   import org.strllar.stellarbase.Networks.XLMLive
 
-  val test_address = new StrAddress(1 to 32 map(_.toByte))
+  val test_account = new StrAccountID(1 to 32 map(_.toByte))
   "genderate correct address" in {
-    test_address.toString()  must_== "GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"
+    test_account.toString()  must_== "GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"
   }
   "parse correct string" in {
-    val test_address2 = StrAddress.parse("GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV")
-    test_address2.get.toString() must_== "GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"
+    val test_account2 = StrAccountID.parse("GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV")
+    test_account2.get.toString() must_== "GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"
   }
 }

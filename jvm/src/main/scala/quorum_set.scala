@@ -3,13 +3,13 @@
  */
 package org.strllar.stellarbase
 
-case class QuorumSet(valids: Seq[StrAddress], innners: Seq[QuorumSet] = Seq.empty, threshhold: Int = 0)
+case class QuorumSet(valids: Seq[StrAccountID], innners: Seq[QuorumSet] = Seq.empty, threshhold: Int = 0)
 
 object QuorumSet {
-  def apply(valids :StrAddress*):QuorumSet = {
+  def apply(valids :StrAccountID*):QuorumSet = {
     QuorumSet(valids.toSeq)
   }
-  def apply(valids: Seq[StrAddress], threshhold: Int, inners :QuorumSet*):QuorumSet = {
+  def apply(valids: Seq[StrAccountID], threshhold: Int, inners :QuorumSet*):QuorumSet = {
    QuorumSet(valids, inners.toSeq, threshhold)
   }
 

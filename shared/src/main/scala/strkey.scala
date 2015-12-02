@@ -18,33 +18,28 @@ class StrSeed(implicit network :Network) {
 
   override def toString() = network.keyFactory.formatSeed(this)
 
-  def address = new StrAddress(kp.publicKey)
+  def accountid = new StrAccountID(kp.publicKey)
 }
 
 object StrSeed {
   def parse(s :String)(implicit network :Network) = network.keyFactory.parseSeed(s)
 }
 
-class  StrAddress(implicit network :Network) {
+class  StrAccountID(implicit network :Network) {
   val rawbytes = new Array[Byte](32)
   def this(bytes:  Seq[Byte])(implicit network :Network) {
     this()
     bytes.copyToArray(rawbytes)
   }
-  override def toString() = network.keyFactory.formatAddress(this)
+  override def toString() = network.keyFactory.formatAccountID(this)
 }
 
-object StrAddress {
-  def parse(s :String)(implicit network :Network) = network.keyFactory.parseAddress(s)
+object StrAccountID {
+  def parse(s :String)(implicit network :Network) = network.keyFactory.parseAccountID(s)
 }
 
 object StrKey {
-  //"GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
-  //"SBQWY3DNPFWGSZTFNV4WQZLBOJ2GQYLTMJSWK3TTMVQXEY3INFXGO52X"
-//  new VersionBytes{
-//    val accountId :Byte = 0x30
-//    val seed :Byte = 0x90 toByte
-//  }
+
   val masterChant = "allmylifemyhearthasbeensearching"
 
 
