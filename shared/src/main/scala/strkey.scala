@@ -99,8 +99,14 @@ object StrKey {
     }
   }
 
-  def master()(implicit network :Network): StrSeed  = {
+  def legacyMaster()(implicit network :Network): StrSeed  = {
     new StrSeed(masterChant.getBytes)(network)
+  }
+
+  def master()(implicit network :Network): StrSeed  = {
+    val md256 = new Sha256()
+    md256.update(network.NETWORK_PASSPHRASE.getBytes)
+    new StrSeed(md256.digest)
   }
 
   def random()(implicit network :Network): StrSeed  = {

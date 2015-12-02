@@ -1,7 +1,7 @@
 package mytests
 
 import com.inthenow.zcheck.SpecLite
-import org.strllar.stellarbase.{StrAddress, StrSeed}
+import org.strllar.stellarbase.{StrAddress, StrSeed, StrKey}
 
 object TestKeys {
   import org.strllar.stellarbase.Networks.XLMLive
@@ -17,9 +17,21 @@ object TestKeys {
 
 object StrSeedSpec extends SpecLite {
   import TestKeys._
-  import org.strllar.stellarbase.Networks.XLMLive
+  "Root accounts in various networks" should {
+    "be correct" in {
+      StrKey.master()(org.strllar.stellarbase.Networks.XLMLive).toString() must_== "SB5MGOMXKRHDC5OSM26QEJBZWIWNWFSQRQARMPZG4XFSUPQQIWUXTVO6"
+      StrKey.master()(org.strllar.stellarbase.Networks.XLMLive).address.toString() must_== "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7"
 
+      StrKey.master()(org.strllar.stellarbase.Networks.XLMTestnet).toString() must_== "SDHOAMBNLGCE2MV5ZKIVZAQD3VCLGP53P3OBSBI6UN5L5XZI5TKHFQL4"
+      StrKey.master()(org.strllar.stellarbase.Networks.XLMTestnet).address.toString() must_== "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
+
+      StrKey.master()(org.strllar.stellarbase.Networks.KLMLive).toString() must_== "XZISUMAUUY622JJW4S6POVMWDAY7DSP4QAOEQGTJJLICWC3TCM734VWL"
+      StrKey.master()(org.strllar.stellarbase.Networks.KLMLive).address.toString() must_== "NBIFBSRNGRWNFBOL5KRH3RTNDZEHQSMLCDXYQ2INUE4IN7H6NO6UPPAQ"
+    }
+  }
   "StrSeed should" should {
+    import org.strllar.stellarbase.Networks.XLMLive
+
     "generate correct string" in {
       master.toString() must_== "SBQWY3DNPFWGSZTFNV4WQZLBOJ2GQYLTMJSWK3TTMVQXEY3INFXGO52X"
       adam.toString() must_== "SB2GSYLOEB3WC3THEBTWC2JAMRUSA2DVH47T6PZ7H47T6PZ7H47T6432"

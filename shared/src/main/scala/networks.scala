@@ -62,7 +62,7 @@ object Networks {
   implicit case object KLMLive extends Network {
     val versionBytes = new {
       val accountId :Byte = 0x68 toByte
-      val seed :Byte = 0xb8 toByte
+      val seed :Byte = 0xbe toByte
     }
 
     override val NETWORK_PASSPHRASE = "KLM is a Kilo of xLM; Strllar is an awesome copycat Stellar."
