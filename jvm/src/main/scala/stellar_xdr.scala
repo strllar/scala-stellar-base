@@ -42,8 +42,7 @@ package manual_xdr {
     }
   }
 
-import akka.http.scaladsl.marshalling.Marshalling.Opaque
-import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapper, ops.coproduct.Unifier
+  import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapper, ops.coproduct.Unifier
 
   object concatOp extends Poly2 {
     implicit  def default[T](implicit xo: Lazy[XDROpaque.Case.Aux[T, RawOpaque]]) =
@@ -86,9 +85,24 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
 
   case class uint256(opaqueN32 :RawOpaque)
   case class Hash(opaqueN32 :RawOpaque)
-  case class SignatureHint(opaqueM64 :RawOpaque)
-  case class Signature(opaqueN4 :RawOpaque)
+  case class SignatureHint(opaqueN4 :RawOpaque)
+  object Signature {
+    def apply(opaqueM64 :RawOpaque) = new Signature(opaqueM64)
+
+    implicit def toOpaque(sig :Signature) = new XDRStagedItem {
+      override def toOpaque: RawOpaque = XDROpaque.from(sig.opaqueM64.length, sig.opaqueM64)
+    }
+  }
+  class Signature(val opaqueM64 :RawOpaque)
   case class TimeBounds(minTime :uint64,maxTime :uint64)
+
+  object EnvelopeType
+  {
+    abstract class Enum(val value :Int)
+    case object ENVELOPE_TYPE_SCP extends Enum(1)
+    case object ENVELOPE_TYPE_TX extends Enum(2)
+    case object ENVELOPE_TYPE_AUTH extends Enum(3)
+  }
 
   object CryptoKeyType {
     abstract class Enum(val value :Int) {
@@ -260,11 +274,16 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
   case class DecoratedSignature(hint :SignatureHint, signature :Signature)
 
   object TransactionEnvelope {
-    def apply(tx :Transaction) = new TransactionEnvelope(tx)
+    case class Components(tx :Transaction, signatures :Vector[DecoratedSignature])
+    def apply(tx :Transaction) = new TransactionEnvelope(Components(tx, Vector.empty[DecoratedSignature]))
+    implicit def toOpaque(* :TransactionEnvelope) =  new XDRStagedItem {
+      import *.*._
+      override def toOpaque = XDROpaque.from(tx, signatures)
+    }
   }
 
-  class TransactionEnvelope(val tx :Transaction) {
-    def $signatures(signaturese :DecoratedSignature*) = this
+  class TransactionEnvelope(val * :TransactionEnvelope.Components) {
+    def $signatures(signatures :DecoratedSignature*) = new TransactionEnvelope(*.copy(signatures = signatures.toVector))
   }
 
 }

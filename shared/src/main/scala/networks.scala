@@ -24,6 +24,12 @@ trait Network {
 
   val nativeCurrency :String
   val nativeUnit :Long
+
+  lazy val networkId = {
+    val md256 = new Sha256()
+    md256.update(NETWORK_PASSPHRASE.getBytes)
+    md256.digest.toVector
+  }
 }
 
 object Networks {

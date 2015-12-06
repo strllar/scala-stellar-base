@@ -15,10 +15,15 @@ class StrSeed(implicit network :Network) {
     seedfeeds.copyToArray(rawseed)
   }
   lazy val kp = nacl4s.SigningKeyPair(rawseed)
+  lazy val sk = nacl4s.SigningKey(kp.privateKey)
 
   override def toString() = network.keyFactory.formatSeed(this)
 
   def accountid = new StrAccountID(kp.publicKey)
+
+  def sign(data :Array[Byte]) :Array[Byte] = {
+    sk.sign(data)
+  }
 }
 
 object StrSeed {
@@ -99,9 +104,7 @@ object StrKey {
   }
 
   def master()(implicit network :Network): StrSeed  = {
-    val md256 = new Sha256()
-    md256.update(network.NETWORK_PASSPHRASE.getBytes)
-    new StrSeed(md256.digest)
+    new StrSeed(network.networkId)
   }
 
   def random()(implicit network :Network): StrSeed  = {
