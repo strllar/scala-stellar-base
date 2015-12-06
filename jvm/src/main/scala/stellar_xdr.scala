@@ -105,9 +105,7 @@ package manual_xdr {
   }
 
   object CryptoKeyType {
-    abstract class Enum(val value :Int) {
-      def toUnsigned :Long = value & 0xffffffff
-    }
+    abstract class Enum(val value :Int)
     case object KEY_TYPE_ED25519 extends Enum(0)
   }
 
@@ -117,7 +115,7 @@ package manual_xdr {
     }
     class  arm_KEY_TYPE_ED25519(val ed25519 :uint256) extends Arm{
       val `type` = CryptoKeyType.KEY_TYPE_ED25519
-      override  def toOpaque = XDROpaque.from(`type`.value :: ed25519 :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value, ed25519)
     }
 
     type Union = arm_KEY_TYPE_ED25519 :+: CNil
@@ -126,9 +124,7 @@ package manual_xdr {
   }
 
   object MemoType {
-    abstract class Enum(val value :Int) {
-      def toUnsigned :Long = value & 0xffffffff
-    }
+    abstract class Enum(val value :Int)
     case object MEMO_NONE extends Enum(0)
     case object MEMO_TEXT extends Enum(1)
     case object MEMO_ID extends Enum(2)
@@ -146,19 +142,19 @@ package manual_xdr {
     }
     class arm_MEMO_TEXT(val text :String) extends Arm {
       val `type` = MemoType.MEMO_TEXT
-      override  def toOpaque = XDROpaque.from(`type`.value :: text :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value, text)
     }
     class arm_MEMO_ID(val id :uint64) extends Arm {
       val `type` = MemoType.MEMO_ID
-      override  def toOpaque = XDROpaque.from(`type`.value :: id :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value, id)
     }
     class  arm_MEMO_HASH(val hash :Hash) extends Arm {
       val `type` = MemoType.MEMO_HASH
-      override  def toOpaque = XDROpaque.from(`type`.value :: hash :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value, hash)
     }
     class arm_MEMO_RETURN(val retHash :Hash) extends Arm {
       val `type` = MemoType.MEMO_RETURN
-      override  def toOpaque = XDROpaque.from(`type`.value :: retHash :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value, retHash)
     }
 
     type Union = arm_MEMO_NONE :+: arm_MEMO_TEXT :+: arm_MEMO_ID :+: arm_MEMO_HASH :+: arm_MEMO_RETURN :+: CNil
@@ -171,9 +167,7 @@ package manual_xdr {
   }
 
   object OperationType {
-    abstract class Enum(val value :Int) {
-      def toUnsigned :Long = value & 0xffffffff
-    }
+    abstract class Enum(val value :Int)
     case object CREATE_ACCOUNT  extends Enum( 0 )
     case object PAYMENT  extends Enum( 1 )
     case object PATH_PAYMENT  extends Enum( 2 )
@@ -198,19 +192,19 @@ package manual_xdr {
       }
       class arm_CREATE_ACCOUNT(val createAccountOp :CreateAccountOp) extends Arm {
         val `type` = OperationType.CREATE_ACCOUNT
-        override def toOpaque = XDROpaque.from(`type`.value :: createAccountOp :: HNil)
+        override def toOpaque = XDROpaque.from(`type`.value, createAccountOp)
       }
       class arm_PAYMENT(val paymentOp :PaymentOp) extends Arm {
         val `type` = OperationType.PAYMENT
-        override def toOpaque = XDROpaque.from(`type`.value :: paymentOp :: HNil)
+        override def toOpaque = XDROpaque.from(`type`.value, paymentOp)
       }
       class arm_ACCOUNT_MERGE(val destination :AccountID) extends Arm {
         val `type` = OperationType.ACCOUNT_MERGE
-        override def toOpaque = XDROpaque.from(`type`.value :: destination :: HNil)
+        override def toOpaque = XDROpaque.from(`type`.value, destination)
       }
       class arm_INFLATION() extends Arm {
         val `type` = OperationType.INFLATION
-        override def toOpaque = XDROpaque.from(`type`.value :: HNil)
+        override def toOpaque = XDROpaque.from(`type`.value)
       }
 
       type Union = arm_CREATE_ACCOUNT :+: arm_PAYMENT :+: arm_ACCOUNT_MERGE :+: arm_INFLATION :+: CNil
@@ -228,7 +222,7 @@ package manual_xdr {
 
     implicit def toOpaque(* :Operation) =  new XDRStagedItem {
       import *.*._
-      override def toOpaque = XDROpaque(sourceAccount :: body :: HNil)
+      override def toOpaque = XDROpaque.from(sourceAccount, body)
     }
   }
 
@@ -238,9 +232,7 @@ package manual_xdr {
 
   object Transaction {
     object Union_ext {
-      abstract class Enum(val value :Int) {
-        def toUnsigned :Long = value & 0xffffffff
-      }
+      abstract class Enum(val value :Int)
       case object _0 extends Enum(0)
 
       trait Arm extends XDRStagedItem {

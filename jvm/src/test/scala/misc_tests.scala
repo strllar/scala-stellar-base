@@ -1,6 +1,5 @@
 package mytests
 
-import shapeless.HNil
 import com.inthenow.zcheck.{SpecLite}
 
 import org.strllar.stellarbase.{xdr_generator => xgr, Network, Sha256, stellar_xdr}

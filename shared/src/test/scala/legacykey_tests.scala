@@ -2,7 +2,6 @@ package mytests
 
 import com.inthenow.zcheck.{SpecLite}
 
-import org.strllar.stellarbase.StrAccountID$
 import org.strllar.stellarbase.legacy.StrKey.Converters._
 
 object LegacyStrKeySpec extends SpecLite {
