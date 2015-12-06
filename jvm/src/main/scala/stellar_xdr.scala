@@ -15,7 +15,7 @@ package object manual_xdr {
   }
 
   //converters
-  implicit def accountid2xdr(acct :org.strllar.stellarbase.StrAccountID) :AccountID = PublicKey.$KEY_TYPE_ED25519(uint256(Vector[Byte]()))
+  implicit def accountid2xdr(acct :org.strllar.stellarbase.StrAccountID) :AccountID = PublicKey.$KEY_TYPE_ED25519(uint256(acct.rawbytes.toVector))
 
   //intrinsic xdr type defines
   type void = Unit
@@ -30,6 +30,18 @@ package object manual_xdr {
 
 package manual_xdr {
 
+  object BytesPacker {
+    def apply(x :Int) :RawOpaque = Vector[Byte](((x >>> 24) & 0xff).toByte, ((x >>> 16) & 0xff).toByte, ((x >>> 8) & 0xff).toByte, (x & 0xff).toByte)
+
+    def apply(x :Long) :RawOpaque  = Vector[Byte](((x >>> 56) & 0xff).toByte, ((x >>> 48) & 0xff).toByte, ((x >>> 40) & 0xff).toByte, (x >>>32 & 0xff).toByte,
+      ((x >>> 24) & 0xff).toByte, ((x >>> 16) & 0xff).toByte, ((x >>> 8) & 0xff).toByte, (x & 0xff).toByte)
+
+    def apply(x :String) :RawOpaque = {
+      val newlen = (x.length + 3) & ~3
+      BytesPacker(x.length) ++ x.getBytes.toSeq.padTo(newlen, 0 toByte).toVector
+    }
+  }
+
 import akka.http.scaladsl.marshalling.Marshalling.Opaque
 import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapper, ops.coproduct.Unifier
 
@@ -42,13 +54,13 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
     //intrinsic XDR rules
 
     //implicit def caseInt32 = at[uint32](x => Vector.empty[Byte])
-    implicit def caseInt = at[Int](x => Vector[Byte](((x >>> 24) & 0xff).toByte, ((x >>> 16) & 0xff).toByte, ((x >>> 8) & 0xff).toByte, (x & 0xff).toByte))
+    implicit def caseInt = at[Int](x => BytesPacker(x))
 
-    implicit def caseInt64 = at[uint64](x => Vector.empty[Byte])
+    implicit def caseLong = at[Long](x => BytesPacker(x))
 
-    implicit def caseVector[T] = at[Vector[T]](x => Vector.empty[Byte])
+    implicit def caseVector[T](implicit xo: Lazy[XDROpaque.Case.Aux[T, RawOpaque]]) = at[Vector[T]](x => BytesPacker(x.length) ++ x.flatMap(xo.value(_)))
 
-    implicit def caseString = at[String](x => Vector.empty[Byte])
+    implicit def caseString = at[String](x => BytesPacker(x))
 
     implicit def caseOption[T](implicit xo: Lazy[XDROpaque.Case.Aux[T, RawOpaque]]) = at[Option[T]]({
       case None => Vector[Byte](0,0,0,0)
@@ -91,7 +103,7 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
     }
     class  arm_KEY_TYPE_ED25519(val ed25519 :uint256) extends Arm{
       val `type` = CryptoKeyType.KEY_TYPE_ED25519
-      override  def toOpaque = XDROpaque.from(`type`) ++ XDROpaque.from(ed25519)
+      override  def toOpaque = XDROpaque.from(`type`.value :: ed25519 :: HNil)
     }
 
     type Union = arm_KEY_TYPE_ED25519 :+: CNil
@@ -116,23 +128,23 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
     }
     class  arm_MEMO_NONE() extends Arm  {
       val `type` = MemoType.MEMO_NONE
-      override  def toOpaque = XDROpaque.from(`type`)
+      override  def toOpaque = XDROpaque.from(`type`.value)
     }
     class arm_MEMO_TEXT(val text :String) extends Arm {
       val `type` = MemoType.MEMO_TEXT
-      override  def toOpaque = XDROpaque.from(`type` :: text :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value :: text :: HNil)
     }
     class arm_MEMO_ID(val id :uint64) extends Arm {
       val `type` = MemoType.MEMO_ID
-      override  def toOpaque = XDROpaque.from(`type` :: id :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value :: id :: HNil)
     }
     class  arm_MEMO_HASH(val hash :Hash) extends Arm {
       val `type` = MemoType.MEMO_HASH
-      override  def toOpaque = XDROpaque.from(`type` :: hash :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value :: hash :: HNil)
     }
     class arm_MEMO_RETURN(val retHash :Hash) extends Arm {
       val `type` = MemoType.MEMO_RETURN
-      override  def toOpaque = XDROpaque.from(`type` :: retHash :: HNil)
+      override  def toOpaque = XDROpaque.from(`type`.value :: retHash :: HNil)
     }
 
     type Union = arm_MEMO_NONE :+: arm_MEMO_TEXT :+: arm_MEMO_ID :+: arm_MEMO_HASH :+: arm_MEMO_RETURN :+: CNil
@@ -167,20 +179,24 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
 
   object Operation {
     object Union_body {
-      trait Arm {
+      trait Arm extends XDRStagedItem {
         val `type` :OperationType.Enum
       }
       class arm_CREATE_ACCOUNT(val createAccountOp :CreateAccountOp) extends Arm {
         val `type` = OperationType.CREATE_ACCOUNT
+        override def toOpaque = XDROpaque.from(`type`.value :: createAccountOp :: HNil)
       }
       class arm_PAYMENT(val paymentOp :PaymentOp) extends Arm {
         val `type` = OperationType.PAYMENT
+        override def toOpaque = XDROpaque.from(`type`.value :: paymentOp :: HNil)
       }
       class arm_ACCOUNT_MERGE(val destination :AccountID) extends Arm {
         val `type` = OperationType.ACCOUNT_MERGE
+        override def toOpaque = XDROpaque.from(`type`.value :: destination :: HNil)
       }
       class arm_INFLATION() extends Arm {
         val `type` = OperationType.INFLATION
+        override def toOpaque = XDROpaque.from(`type`.value :: HNil)
       }
 
       type Union = arm_CREATE_ACCOUNT :+: arm_PAYMENT :+: arm_ACCOUNT_MERGE :+: arm_INFLATION :+: CNil
@@ -191,11 +207,19 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
       def $INFLATION() = Coproduct[Union](new arm_INFLATION())
     }
 
-    def apply(body :Operation.Union_body.Union) = new Operation(body)
+    case class Components(body :Operation.Union_body.Union, sourceAccount :Option[AccountID])
+
+
+    def apply(body :Operation.Union_body.Union) = new Operation(Components(body, None))
+
+    implicit def toOpaque(* :Operation) =  new XDRStagedItem {
+      import *.*._
+      override def toOpaque = XDROpaque(sourceAccount :: body :: HNil)
+    }
   }
 
-  class Operation(val body :Operation.Union_body.Union) {
-    def $sourceAccount(sourceAccount :AccountID) = this
+  class Operation(val * :Operation.Components) {
+    def $sourceAccount(sourceAccount :AccountID) = new Operation(*.copy(sourceAccount = Some(sourceAccount)))
   }
 
   object Transaction {
@@ -210,17 +234,17 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
       }
       class arm_0() extends Arm {
         val v = _0
-        override def toOpaque = Vector.empty[Byte]
+        override def toOpaque = XDROpaque.from(v.value)
       }
       type Union = arm_0 :+: CNil
 
       def $0() = Coproduct[Union](new arm_0())
 
     }
-    case class Struct(sourceAccount :AccountID, fee :uint32, seqNum :SequenceNumber, memo :Memo.Union, ext :Transaction.Union_ext.Union, timeBounds :Option[TimeBounds], operations :Vector[Operation] )
+    case class Components(sourceAccount :AccountID, fee :uint32, seqNum :SequenceNumber, memo :Memo.Union, ext :Transaction.Union_ext.Union, timeBounds :Option[TimeBounds], operations :Vector[Operation] )
 
     def apply(sourceAccount :AccountID, fee :uint32, seqNum :SequenceNumber, memo :Memo.Union, ext :Transaction.Union_ext.Union)
-    = new Transaction(Struct(sourceAccount, fee , seqNum, memo, ext, None, Vector.empty[Operation]))
+    = new Transaction(Components(sourceAccount, fee , seqNum, memo, ext, None, Vector.empty[Operation]))
 
     implicit def toOpaque(* :Transaction) =  new XDRStagedItem {
       import *.*._
@@ -228,7 +252,7 @@ import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapp
     }
   }
 
-  class Transaction(val * :Transaction.Struct) {
+  class Transaction(val * :Transaction.Components) {
     def $timeBounds(x :TimeBounds) = new Transaction(*.copy(timeBounds = Some(x)))
     def $operations(x :Operation*) = new Transaction(*.copy(operations = x.toVector))
   }
