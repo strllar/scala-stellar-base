@@ -42,7 +42,9 @@ package manual_xdr {
     }
   }
 
-  import shapeless._, shapeless.ops.hlist.LeftFolder, shapeless.ops.coproduct.Mapper, ops.coproduct.Unifier
+  import shapeless._
+  import shapeless.ops.coproduct.{Mapper, Unifier}
+  import shapeless.ops.hlist.LeftFolder
 
   object concatOp extends Poly2 {
     implicit  def default[T](implicit xo: Lazy[XDROpaque.Case.Aux[T, RawOpaque]]) =
