@@ -14,9 +14,6 @@ package object manual_xdr {
     def toOpaque :RawOpaque
   }
 
-  //converters
-  implicit def accountid2xdr(acct :org.strllar.stellarbase.StrAccountID) :AccountID = PublicKey.$KEY_TYPE_ED25519(uint256(acct.rawbytes.toVector))
-
   //intrinsic xdr type defines
   type void = Unit
   //type defines in .xdr files
@@ -24,7 +21,7 @@ package object manual_xdr {
   type uint64 = Long
   type int64 = Long
   type SequenceNumber = uint64
-  type AccountID = PublicKey.Union
+  val AccountID = PublicKey
 
 }
 
@@ -182,10 +179,10 @@ package manual_xdr {
     case object INFLATION  extends Enum( 9 )
   }
 
-  case class CreateAccountOp(destination :AccountID, startingBalance :int64)
+  case class CreateAccountOp(destination :AccountID.Union, startingBalance :int64)
 
   //case class PaymentOp(destination :AccountID, asset :Asset, amount :int64) //todo Asset
-  case class PaymentOp(destination :AccountID, amount :int64)
+  case class PaymentOp(destination :AccountID.Union, amount :int64)
 
   object Operation {
     object Union_body {
@@ -200,7 +197,7 @@ package manual_xdr {
         val `type` = OperationType.PAYMENT
         override def toOpaque = XDROpaque.from(`type`.value, paymentOp)
       }
-      class arm_ACCOUNT_MERGE(val destination :AccountID) extends Arm {
+      class arm_ACCOUNT_MERGE(val destination :AccountID.Union) extends Arm {
         val `type` = OperationType.ACCOUNT_MERGE
         override def toOpaque = XDROpaque.from(`type`.value, destination)
       }
@@ -213,11 +210,11 @@ package manual_xdr {
 
       def $CREATE_ACCOUNT(createAccountOp :CreateAccountOp) = Coproduct[Union](new arm_CREATE_ACCOUNT(createAccountOp))
       def $PAYMENT(paymentOp :PaymentOp) = Coproduct[Union](new arm_PAYMENT(paymentOp))
-      def $ACCOUNT_MERGE(destination :AccountID) = Coproduct[Union](new arm_ACCOUNT_MERGE(destination))
+      def $ACCOUNT_MERGE(destination :AccountID.Union) = Coproduct[Union](new arm_ACCOUNT_MERGE(destination))
       def $INFLATION() = Coproduct[Union](new arm_INFLATION())
     }
 
-    case class Components(body :Operation.Union_body.Union, sourceAccount :Option[AccountID])
+    case class Components(body :Operation.Union_body.Union, sourceAccount :Option[AccountID.Union])
 
 
     def apply(body :Operation.Union_body.Union) = new Operation(Components(body, None))
@@ -229,7 +226,7 @@ package manual_xdr {
   }
 
   class Operation(val * :Operation.Components) {
-    def $sourceAccount(sourceAccount :AccountID) = new Operation(*.copy(sourceAccount = Some(sourceAccount)))
+    def $sourceAccount(sourceAccount :AccountID.Union) = new Operation(*.copy(sourceAccount = Some(sourceAccount)))
   }
 
   object Transaction {
@@ -249,9 +246,9 @@ package manual_xdr {
       def $0() = Coproduct[Union](new arm_0())
 
     }
-    case class Components(sourceAccount :AccountID, fee :uint32, seqNum :SequenceNumber, memo :Memo.Union, ext :Transaction.Union_ext.Union, timeBounds :Option[TimeBounds], operations :Vector[Operation] )
+    case class Components(sourceAccount :AccountID.Union, fee :uint32, seqNum :SequenceNumber, memo :Memo.Union, ext :Transaction.Union_ext.Union, timeBounds :Option[TimeBounds], operations :Vector[Operation] )
 
-    def apply(sourceAccount :AccountID, fee :uint32, seqNum :SequenceNumber, memo :Memo.Union, ext :Transaction.Union_ext.Union)
+    def apply(sourceAccount :AccountID.Union, fee :uint32, seqNum :SequenceNumber, memo :Memo.Union, ext :Transaction.Union_ext.Union)
     = new Transaction(Components(sourceAccount, fee , seqNum, memo, ext, None, Vector.empty[Operation]))
 
     implicit def toOpaque(* :Transaction) =  new XDRStagedItem {
@@ -283,56 +280,33 @@ package manual_xdr {
 }
 
 package stellar_xdr {
+import manual_xdr._
 
+object ops {
 
-//    struct Transaction
-//    {
-//    // account used to run the transaction
-//    AccountID sourceAccount;
-//
-//    // the fee the sourceAccount will pay
-//    uint32 fee;
-//
-//    // sequence number to consume in the account
-//    SequenceNumber seqNum;
-//
-//    // validity range (inclusive) for the last ledger close time
-//    TimeBounds* timeBounds;
-//
-//    Memo memo;
-//
-//    Operation operations<100>;
-//
-//    // reserved for future use
-//    union switch (int v)
-//    {
-//    case 0:
-//    void;
-//    }
-//    ext;
-//    };
+  implicit def accountid2xdr(acct :org.strllar.stellarbase.StrAccountID) :AccountID.Union = AccountID.$KEY_TYPE_ED25519(uint256(acct.rawbytes.toVector))
 
-  //import org.strllar.stellarbase.compiled_xdr._
-
-
-  object Test {
-
-    //val trans = xdr_generator.XDRGen[Transaction]
-
-    def test(): Unit = {
-      //trans.toXDR()
-
-//      class aSampleStruct {
-//        val f1:Int
-//        val f2:Option[Array[Byte]]
-//        val f3 = unionSwitch[EnumType](armType[SwitchEntry1].as "name1",
-//        armtype[SwitchEntry2].as"name2",
-//        armtype[SwitchEntry3].as"name3") {
-//          case 1 => "name1";
-//          case 2 => "name2";
-//          case 3 => "name3";
-//        }
-//      }
+  implicit def AccountIDOPs(acct :AccountID.Union) = new {
+    def hint :SignatureHint = {
+      SignatureHint(acct.select[AccountID.arm_KEY_TYPE_ED25519].get.ed25519.opaqueN32.takeRight(4).toVector)
     }
   }
+
+  implicit def TransactionOPs(tx :Transaction) = new {
+    def hashid(implicit network :Network) = { //:Hash256
+      val md256 = new Sha256()
+      md256.update(XDROpaque.from(network.networkId, EnvelopeType.ENVELOPE_TYPE_TX.value, tx))
+      md256.digest
+    }
+  }
+
+  implicit def  AccountOP(seed :StrSeed) = new {
+    def signTx(tx :Transaction)(implicit network :Network) = {
+      val acct :AccountID.Union = seed.accountid
+      DecoratedSignature(acct.hint, Signature(seed.sign(tx.hashid).toVector))
+    }
+  }
+
+}
+
 }
