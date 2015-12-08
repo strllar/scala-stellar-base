@@ -5,28 +5,24 @@ organization := "org.strllar"
 
 scalaVersion := "2.10.5"
 
+val xdrGenTask = TaskKey[Unit]("xdrGen", "Generate sources from stellar xdr files")
 lazy val root = project.in(file(".")).
   aggregate(targetJS, targetJVM).
   settings(
     publish := {},
-    publishLocal := {}
+    publishLocal := {},
+    xdrGenTask := {
+      println("Generating sources from stellar xdr files...")
+      org.strllar.scalaxdr.XDRParser.main(Array.empty[String])
+      println("...done.")
+    }
   )
 
-////temp scaffold for scalaxdr developing
-lazy val scalaxdr = crossProject.crossType(CrossType.Pure).in(file("shared/deps/scala-xdr")).
-  settings(
-    scalaVersion := "2.10.5",
-    libraryDependencies ++=  Seq("org.scala-lang" % "scala-reflect" % "2.10.5",
-      "org.scalamacros" %% "quasiquotes" % "2.1.0",
-      compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full)
-    )
-  )
-lazy val scalaxdrjs = scalaxdr.js
-lazy val scalaxdrjvm = scalaxdr.jvm
-////temp end
+lazy val scalaxdrJVM = ProjectRef(file("shared/deps/scala-xdr"), "xdrbaseJVM")
+lazy val scalaxdrJS = ProjectRef(file("shared/deps/scala-xdr"), "xdrbaseJS")
+
 
 lazy val stellarbase = crossProject.in(file(".")).
-  dependsOn(scalaxdr % "compile").
   settings(
     name := "scala-stellar-base",
     organization := "org.strllar",
@@ -74,5 +70,5 @@ lazy val stellarbase = crossProject.in(file(".")).
     //ScalaJSKeys.scalaJSTestFramework := "org.scalacheck.ScalaCheckFramework"
   )
 
-lazy val targetJVM = stellarbase.jvm
-lazy val targetJS = stellarbase.js
+lazy val targetJVM = stellarbase.jvm.dependsOn(scalaxdrJVM)
+lazy val targetJS = stellarbase.js.dependsOn(scalaxdrJS)
