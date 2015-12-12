@@ -5,22 +5,8 @@ organization := "org.strllar"
 
 scalaVersion := "2.10.5"
 
-val xdrGenTask = TaskKey[Unit]("xdrGen", "Generate sources from stellar xdr files")
-lazy val root = project.in(file(".")).
-  aggregate(targetJS, targetJVM).
-  settings(
-    publish := {},
-    publishLocal := {},
-    xdrGenTask := {
-      println("Generating sources from stellar xdr files...")
-      org.strllar.scalaxdr.XDRParser.main(Array.empty[String])
-      println("...done.")
-    }
-  )
-
 lazy val scalaxdrJVM = ProjectRef(file("shared/deps/scala-xdr"), "xdrbaseJVM")
 lazy val scalaxdrJS = ProjectRef(file("shared/deps/scala-xdr"), "xdrbaseJS")
-
 
 lazy val stellarbase = crossProject.in(file(".")).
   settings(
