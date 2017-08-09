@@ -1,6 +1,3 @@
-[submodule "shared/deps/scala-xdr"]
-	path = shared/deps/scala-xdr
-	url = https://github.com/strllar/scala-xdr.git
 [submodule "shared/deps/nacl4s"]
 	path = shared/deps/nacl4s
 	url = https://github.com/emstlk/nacl4s.git
