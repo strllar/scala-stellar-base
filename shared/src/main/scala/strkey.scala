@@ -24,6 +24,8 @@ class StrSeed(implicit network :Network) {
   def sign(data :Array[Byte]) :Array[Byte] = {
     sk.sign(data)
   }
+
+  def address = "G..."
 }
 
 object StrSeed {

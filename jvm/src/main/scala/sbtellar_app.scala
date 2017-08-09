@@ -12,7 +12,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.RequestContext
 import akka.http.scaladsl.server.directives.FormFieldDirectives
 import akka.stream.ActorMaterializer
-import akka.stream.io.OutputStreamSink
+import akka.stream.scaladsl.StreamConverters
 
 import scala.sys.process._
 
@@ -29,7 +29,7 @@ object SbtellarApp extends App {
         }(rc.executionContext)
       }
     }~
-      path("hist" / RestPath) { pathRest =>
+      path("hist" / RemainingPath) { pathRest =>
         get {
           getFromFile(new File("history/" + pathRest))
         } ~
@@ -39,7 +39,7 @@ object SbtellarApp extends App {
                 val file = new File("history/" +pathRest)
                 file.getParentFile().mkdirs();
                 file.createNewFile();
-                val mat = rc.request.entity.dataBytes.runWith(OutputStreamSink(()=>{new FileOutputStream(file)}))
+                val mat = rc.request.entity.dataBytes.runWith(StreamConverters.fromOutputStream(() => new FileOutputStream(file)))
                 mat.flatMap( filesize => {
                   //logger.info(s"wrote $pathRest $filesize/${rc.request.entity.getContentLengthOption()} bytes")
                   rc.complete("OK")
@@ -50,10 +50,10 @@ object SbtellarApp extends App {
       } ~
       path("tx") {
         //support `curl -F blob="BASE64+/ENCODED+/TRANSACTION" http://localhost:8080/tx` without manual urlencoding
-        formFields(FormFieldDirectives.symbol2NR('blob)) {
+        formFields('blob) {
           (blob) =>  {
           (rc: RequestContext) => {
-          Http().singleRequest(HttpRequest(uri = Uri("http://localhost:39132/tx").withQuery(("blob", blob)))).
+          Http().singleRequest(HttpRequest(uri = Uri("http://localhost:39132/tx").withQuery(("blob", blob) +: Uri.Query.Empty))).
             flatMap { (resp) =>
             rc.complete(resp)
           }(rc.executionContext)

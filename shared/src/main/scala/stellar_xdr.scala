@@ -1,6 +1,7 @@
 package org.strllar.stellarbase
 
 import scodec.{Codec, Attempt, Err, codecs}
+/*
 import org.strllar.scalaxdr.xdrbase.XDRCodecs._
 
 package object manual_xdr {
@@ -399,3 +400,4 @@ object ops {
 }
 
 }
+*/

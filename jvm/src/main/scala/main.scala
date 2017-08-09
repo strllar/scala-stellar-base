@@ -6,10 +6,10 @@ import javax.net.ssl.{SSLContext, SSLParameters, TrustManager, X509TrustManager}
 import java.security.cert.X509Certificate
 import java.security.SecureRandom
 
-import akka.stream.io.{SslTls, NegotiateNewSession,SslTlsOutbound, SslTlsInbound, SessionBytes, SendBytes, Role, Closing}
-import akka.stream.scaladsl.{Source, Flow, Sink, Tcp=>StreamTcp}
-import StreamTcp.{ServerBinding, IncomingConnection}
-import akka.stream.stage.{StatefulStage, PushStage, Context, Directive}
+import akka.stream.TLSRole
+import akka.stream.TLSProtocol.{NegotiateNewSession}
+import akka.stream.scaladsl.{TLS, Tcp=>StreamTcp}
+import akka.stream.stage.GraphStage
 import scala.concurrent._
 import scala.concurrent.duration._
 
@@ -45,7 +45,7 @@ object MainApp extends App {
   //val conn = StreamTcp().outgoingConnection("validator-03.stellar.org", 52001)
   //val conn = StreamTcp().outgoingConnection("192.170.145.70", 51235)
 
-  val tls = SslTls(JSSEHelper.sc, new NegotiateNewSession(None, None, None, None), Role.client)
+  val tls = TLS(JSSEHelper.sc, new NegotiateNewSession(None, None, None, None), TLSRole.client)
   val tslconn = tls.join(conn)
   //val starter = Source.single[SslTlsOutbound]();
 //  val f = tslconn.join(Flow[SslTlsInbound].map({
