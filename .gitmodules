@@ -1,3 +1,3 @@
 [submodule "shared/deps/nacl4s"]
 	path = shared/deps/nacl4s
-	url = https://github.com/emstlk/nacl4s.git
+	url = https://github.com/strllar/nacl4s.git

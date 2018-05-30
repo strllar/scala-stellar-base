@@ -65,7 +65,7 @@ object MainApp extends App {
   //for scala 2.10
   scala.Console.readLine("Press Enter to Exit: ")
 
-  sys.shutdown
+  Await.result(sys.terminate(), 5 seconds)
   println("Done")
 }
 

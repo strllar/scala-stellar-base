@@ -14,6 +14,9 @@ import akka.http.scaladsl.server.directives.FormFieldDirectives
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.StreamConverters
 
+import scala.concurrent._
+import scala.concurrent.duration._
+
 import scala.sys.process._
 
 object SbtellarApp extends App {
@@ -80,6 +83,6 @@ object SbtellarApp extends App {
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => {
 //    core.destroy()
-    system.shutdown()
+    Await.result(system.terminate(), 5 seconds)
   }) // and shutdown when done
 }
