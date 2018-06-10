@@ -1,12 +1,12 @@
-import com.inthenow.zcheck.{SpecLite}
+import org.scalatest._
 import org.strllar.stellarbase.{StrSeed, StrAccountID, QuorumSet}
 
 
-object QuorumSetSpec extends SpecLite {
+object QuorumSetSpec extends FlatSpec with Matchers {
   import org.strllar.stellarbase.Networks.XLMLive
 
-  " Simple Validator QuorumSet" should {
-    "generate config string" in {
+  " Simple Validator QuorumSet" should "pass all" in {
+    it should "generate config string" in {
       val generated = QuorumSet.toConfigString(QuorumSet(Seq(StrSeed.parse("SDQVDISRYN2JXBS7ICL7QJAEKB3HWBJFP2QECXG7GZICAHBK4UNJCWK2").get.accountid), Seq.empty, 88))
       val ref =
       """[QUORUM_SET]
@@ -14,12 +14,12 @@ object QuorumSetSpec extends SpecLite {
         |VALIDATORS=[
         |"GCTI6HMWRH2QGMFKWVU5M5ZSOTKL7P7JAHZDMJJBKDHGWTEC4CJ7O3DU"]
       |""".stripMargin
-      generated.lines.zip(ref.lines).foreach((x) => x._1 must_== x._2)
+      generated.lines.zip(ref.lines).foreach((x) => x._1 shouldEqual x._2)
     }
   }
 
-  " Three Validator QuorumSet" should {
-    "generate config string" in {
+  " Three Validator QuorumSet" should "pass all" in {
+    it should "generate config string" in {
       val generated = QuorumSet.toConfigString(QuorumSet(Seq(
         StrAccountID.parse("GDKXE2OZMJIPOSLNA6N6F2BVCI3O777I2OOC4BV7VOYUEHYX7RTRYA7Y").get,
         StrAccountID.parse("GCUCJTIYXSOXKBSNFGNFWW5MUQ54HKRPGJUTQFJ5RQXZXNOLNXYDHRAP").get,
@@ -34,12 +34,12 @@ object QuorumSetSpec extends SpecLite {
            |"GC2V2EFSXN6SQTWVYA5EPJPBWWIMSD2XQNKUOHGEKB535AQE2I6IXV2Z"]
            |""".stripMargin
 
-      generated.lines.zip(ref.lines).foreach((x) => x._1 must_== x._2)
+      generated.lines.zip(ref.lines).foreach((x) => x._1 shouldEqual x._2)
     }
   }
 
-  "Two Level QuorumSet" should {
-    "generate config string" in {
+  "Two Level QuorumSet" should "pass all" in {
+    it should "generate config string" in {
       val generated = QuorumSet.toConfigString(QuorumSet(Seq(
         StrAccountID.parse("GDKXE2OZMJIPOSLNA6N6F2BVCI3O777I2OOC4BV7VOYUEHYX7RTRYA7Y").get
       ), Seq(
@@ -59,12 +59,12 @@ object QuorumSetSpec extends SpecLite {
           |"GC2V2EFSXN6SQTWVYA5EPJPBWWIMSD2XQNKUOHGEKB535AQE2I6IXV2Z"]
           |""".stripMargin
 
-      generated.lines.zip(ref.lines).foreach((x) => x._1 must_== x._2)
+      generated.lines.zip(ref.lines).foreach((x) => x._1 shouldEqual x._2)
     }
   }
 
-  "Full Level QuorumSet" should {
-    "generate config string" in {
+  "Full Level QuorumSet" should "pass all" in {
+    it should "generate config string" in {
       val generated = QuorumSet.toConfigString(
         QuorumSet(Seq(//Root
           StrAccountID.parse("GDQWITFJLZ5HT6JCOXYEVV5VFD6FTLAKJAUDKHAV3HKYGVJWA2DPYSQV").get,
@@ -119,7 +119,7 @@ object QuorumSetSpec extends SpecLite {
 
           )
 
-      generated.lines.zip(ref.lines).foreach((x) => x._1 must_== x._2)
+      generated.lines.zip(ref.lines).foreach((x) => x._1 shouldEqual x._2)
     }
   }
 }

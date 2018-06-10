@@ -1,12 +1,12 @@
 package mytests
 
-import com.inthenow.zcheck.{SpecLite}
+import org.scalatest._
 
 import org.strllar.stellarbase._
 
-object UnsortedSpec extends SpecLite {
-  "Nothing" should {
-    "be not wrong" in {
+object UnsortedSpec extends FlatSpec with Matchers {
+  it should "work" in {
+    it should "be not wrong" in {
       //TODO
     }
   }
